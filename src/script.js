@@ -36,7 +36,7 @@ container.appendChild(renderer.domElement) // add the renderer to html div
 
 /* Cameras config */
 const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 100)
-camera.position.set(-34, 16, -20) //34, 16, -20
+camera.position.set(-34, 16, -20)
 
 scene.add(camera)
 
@@ -77,39 +77,33 @@ loader.load('models/gltf/warehouse.glb', (warehouse) => {
     scene.add(warehouse.scene)
 })
 
+// let warehouseRoof = new THREE.Object3D();
+// loader.load('models/gltf/warehouseRoof.glb', (warehouseRoof) => {
+//     warehouseRoof = warehouseRoof
+//     scene.add(warehouseRoof.scene)
+// })
 
-let warehouseRoof = new THREE.Object3D();
-loader.load('models/gltf/warehouseRoof.glb', (warehouseRoof) => {
-    warehouseRoof = warehouseRoof
-    scene.add(warehouseRoof.scene)
-})
+// document.getElementById('toggleRoof')
+//     .addEventListener('click', () => { 
+//         warehouseRoof.visible = !warehouseRoof.visible;
+//         warehouseRoof
+//         debugger
+//     }
+
+//     );
 
 let truck_1;
 let truck_2;
-let truck_3;
-let truck_4;
 
 loader.load('models/gltf/truck.glb', (truck) => {
     truck_1 = truck.scene.children[0]
-    truck_1.position.set(-10, -0.25, -2)
-
+    truck_1.position.set(-10, 0, -2)
 
     truck_2 = THREE.Object3D.prototype.clone.call(truck_1);
-    truck_2.position.set(-10, -0.25, -5)
-
-    truck_3 = THREE.Object3D.prototype.clone.call(truck_1);
-    truck_3.position.set(-5, -0.25, 7)
-    truck_3.rotation.y = Math.PI
-
-    truck_4 = THREE.Object3D.prototype.clone.call(truck_1);
-    truck_4.position.set(-4, -0.25, -9)
-    truck_4.rotation.y = Math.PI
-    // truck_1.children[5].material.color.setHex(0x000)
+    truck_2.position.set(-10, 0, -5)
 
     scene.add(truck_1)
     scene.add(truck_2)
-    scene.add(truck_3)
-    scene.add(truck_4)
 })
 
 
@@ -119,12 +113,15 @@ let truckLoader_3;
 
 loader.load('models/gltf/truckLoader.glb', (truckLoader) => {
     truckLoader_1 = truckLoader.scene
+    truckLoader_1.position.set(0, 0, 0)
+    truckLoader_1.rotation.y = 230 * Math.PI / 180;
 
     truckLoader_2 = THREE.Object3D.prototype.clone.call(truckLoader_1);
-    truckLoader_2.position.set(-20, -0.25, 0)
+    truckLoader_2.position.set(0, 0, -5)
 
     truckLoader_3 = THREE.Object3D.prototype.clone.call(truckLoader_1);
-    truckLoader_3.position.set(0, -0.25, 0)
+    truckLoader_3.rotation.y = 130 * Math.PI / 180;
+    truckLoader_3.position.set(-4, 0, 3)
 
     scene.add(truckLoader_1)
     scene.add(truckLoader_2)
@@ -135,52 +132,26 @@ loader.load('models/gltf/truckLoader.glb', (truckLoader) => {
 function introAnimation() {
     controls.enabled = false //disable orbit controls to animate the camera
 
-    new TWEEN.Tween(camera.position.set(26, 4, -35)).to({ // from camera position
-        x: 16, //desired x position to go
-        y: 50, //desired y position to go
-        z: -0.15 //desired z position to go
-    }, 6500) // time take to animate
-        .delay(1000).easing(TWEEN.Easing.Quartic.InOut).start() // define delay, easing
-        .onComplete(function () { //on finish animation
-            controls.enabled = true //enable orbit controls
-            setOrbitControlsLimits() //enable controls limits
-            TWEEN.remove(this) // remove the animation from memory
+    new TWEEN.Tween(camera.position.set(26, 4, -35))
+        .to({ x: -25, y: 20, z: 30 }, 6500)
+        .delay(1000).easing(TWEEN.Easing.Quartic.InOut).start()
+        .onComplete(function () {
+            controls.enabled = true
+            setOrbitControlsLimits()
+            TWEEN.remove(this)
         })
 }
-
-// const roof_Animation = new TWEEN.Tween({ x: 0, y: 0 })
-//     .to({ x: 100, y: 0}, 3000)
-//     // .repeat(Infinity)
-//     // .delay(1000)
-//     // .yoyo(true)
-//     // .easing(TWEEN.Easing.Elastic.InOut)
-//     .onUpdate((coords) => {
-//         if (warehouseRoof) {
-//             console.log(warehouseRoof);
-//             warehouseRoof.position.x = coords.x;
-//             warehouseRoof.position.y = coords.y;
-//             // warehouseRoof.position.z = coords.z;
-//         }
-//     })
-// roof_Animation.start();
-
-// document.getElementById("toggleRoof").addEventListener("click", () => {
-//     console.log('click')
-//     if (warehouseRoof) {
-//         roof_Animation.start();
-//     }
-// });
 
 /* Vehicle  animation using tween */
 const truckStartPosition = { x: -10, y: 0 }
 const truckTargetPosition = { x: -25, y: 0 }
 
 const truck_1_Animation = new TWEEN.Tween(truckStartPosition)
-    .to(truckTargetPosition, 3000)
+    .to(truckTargetPosition, 2500)
     .repeat(Infinity)
-    .delay(1000)
+    .delay(5000)
     .yoyo(true)
-    .easing(TWEEN.Easing.Elastic.InOut)
+    .easing(TWEEN.Easing.Cubic.InOut)
     .onUpdate((coords) => {
         if (truck_1) {
             truck_1.position.x = coords.x;
@@ -201,53 +172,54 @@ const truck_2_Animation = new TWEEN.Tween(truckStartPosition)
         }
     })
 
-const truck_3_Animation = new TWEEN.Tween(truckStartPosition)
-    .to(truckTargetPosition, 2000)
+const truckLoader_1_Animation = new TWEEN.Tween({ x: 0, y: -2.5 })
+    .to({ x: -7, y: -2.5 }, 4000)
     .repeat(Infinity)
     .delay(1000)
     .yoyo(true)
-    .easing(TWEEN.Easing.Circular.InOut)
-    .onUpdate((coords) => {
-        if (truck_1) {
-            truck_3.position.x = coords.x;
-            truck_3.position.y = coords.y;
-        }
-    })
-
-const truck_4_Animation = new TWEEN.Tween(truckStartPosition)
-    .to(truckTargetPosition, 4000)
-    .repeat(Infinity)
-    .delay(1000)
-    .yoyo(true)
-    .easing(TWEEN.Easing.Elastic.InOut)
-    .onUpdate((coords) => {
-        if (truck_1) {
-            truck_4.position.x = coords.x;
-            truck_4.position.y = coords.y;
-        }
-    })
-
-const truckLoader_Animation = new TWEEN.Tween({ x: 0, y: 0 })
-    .to({ x: -8, y: 0 }, 10000)
-    .repeat(Infinity)
-    .delay(1000)
-    .yoyo(true)
-    .easing(TWEEN.Easing.Circular.InOut)
+    .easing(TWEEN.Easing.Cubic.In)
     .onUpdate((coords) => {
         if (truckLoader_1) {
             truckLoader_1.position.x = coords.x;
-            truckLoader_1.position.y = coords.y;
+            truckLoader_1.position.z = coords.y;
+        }
+    })
+
+const truckLoader_2_Animation = new TWEEN.Tween({ x: 0, y: -5.5 })
+    .to({ x: -7, y: -5.5 }, 7500)
+    .repeat(Infinity)
+    .delay(1000)
+    .yoyo(true)
+    .easing(TWEEN.Easing.Cubic.InOut)
+    .onUpdate((coords) => {
+        if (truckLoader_2) {
+            truckLoader_2.position.x = coords.x;
+            truckLoader_2.position.z = coords.y;
+        }
+    })
+
+const truckLoader_3_Animation = new TWEEN.Tween({ x: -6, y: 3 })
+    .to({ x: 7, y: 3 }, 5000)
+    .repeat(Infinity)
+    .delay(1000)
+    .yoyo(true)
+    .easing(TWEEN.Easing.Cubic.InOut)
+    .onUpdate((coords) => {
+        if (truckLoader_3) {
+            truckLoader_3.position.x = coords.x;
+            truckLoader_3.position.z = coords.y;
         }
     })
 
 /* Animation start */
-introAnimation()
+truckLoader_1_Animation.start()
+truckLoader_2_Animation.start()
+truckLoader_3_Animation.start()
 
 truck_1_Animation.start()
 truck_2_Animation.start()
-// truck_3_Animation.start()
-// truck_4_Animation.start()
-truckLoader_Animation.start()
+
+introAnimation()
 
 /* render loop function */
 function rendeLoop() {
