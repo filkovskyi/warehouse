@@ -2,98 +2,21 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiaXZhbmRyYWdvIiwiYSI6ImNrcG9odnc2eTBscGgzMXA0d
 
 /* GENERAL */
 const map = new mapboxgl.Map({
-  style: 'mapbox://styles/mapbox/light-v10',
+  style: 'mapbox://styles/mapbox/streets-v11',
   center: [30.51694655983212, 50.464567272805226],
   zoom: 18,
   pitch: 50,
   bearing: -10,
   container: 'map',
-  antialias: true
+  antialias: true,
 });
 
-/* Add Map Control */
-map.addControl(new mapboxgl.NavigationControl());
-
-
-/* Truck animation START */
-const origin = [30.516896884911148, 50.463493196776];
-const middle = [30.516443781963062, 50.464039519250434];
-const destination = [30.514561707220707, 50.46530180112268];
-const route = {
-  'type': 'FeatureCollection',
-  'features': [
-    {
-      'type': 'Feature',
-      'geometry': {
-        'type': 'LineString',
-        'coordinates': [origin, middle, destination]
-      }
-    }
-  ]
-};
-
-const point = {
-  'type': 'FeatureCollection',
-  'features': [
-    {
-      'type': 'Feature',
-      'properties': {},
-      'geometry': {
-        'type': 'Point',
-        'coordinates': origin
-      }
-    }
-  ]
-};
-// Calculate the distance in kilometers between route start/end point.
-const lineDistance = turf.length(route.features[0]);
-
-const arc = [];
-
-// Number of steps to use in the arc and animation, more steps means
-// a smoother arc and animation, but too many steps will result in a
-// low frame rate
-const steps = 500;
-
-// Draw an arc between the `origin` & `destination` of the two points
-for (let i = 0; i < lineDistance; i += lineDistance / steps) {
-  const segment = turf.along(route.features[0], i);
-  arc.push(segment.geometry.coordinates);
-}
-
-// Update the route with calculated arc coordinates
-route.features[0].geometry.coordinates = arc;
-
-// Used to increment the value of the point measurement against the route.
-let counter = 0;
-
-/* Truck animation END */
-
-
-/* Auto camera rotation */
-// function rotateCamera(timestamp) {
-//   // clamp the rotation between 0 -360 degrees
-//   // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
-//   map.rotateTo((timestamp / 1000) % 360, { duration: 0 });
-//   // Request the next frame of the animation.
-//   requestAnimationFrame(rotateCamera);
-// }
-
 map.on('load', () => {
-  // Start the animation.
-
-  /* Auto camera rotation enable */
-  //  rotateCamera(0);
-
-  // Insert the layer beneath any symbol layer.
   const layers = map.getStyle().layers;
   const labelLayerId = layers.find(
     (layer) => layer.type === 'symbol' && layer.layout['text-field']
   ).id;
 
-  // The 'building' layer in the Mapbox Streets
-  // vector tileset contains building height data
-  // from OpenStreetMap.
   map.addLayer(
     {
       'id': 'add-3d-buildings',
@@ -104,10 +27,6 @@ map.on('load', () => {
       'minzoom': 15,
       'paint': {
         'fill-extrusion-color': '#aaa',
-
-        // Use an 'interpolate' expression to
-        // add a smooth transition effect to
-        // the buildings as the user zooms in.
         'fill-extrusion-height': [
           'interpolate',
           ['linear'],
@@ -131,99 +50,94 @@ map.on('load', () => {
     },
     labelLayerId
   );
-
-  /* ANIMATION */
-  // Add a source and layer displaying a point which will be animated in a circle.
-  map.addSource('route', {
-    'type': 'geojson',
-    'data': route
-  });
-
-  map.addSource('point', {
-    'type': 'geojson',
-    'data': point
-  });
-
-  map.addLayer({
-    'id': 'route',
-    'source': 'route',
-    'type': 'line',
-    'paint': {
-      'line-width': 2,
-      'line-color': '#007cbf'
-    }
-  });
-  map.addLayer({
-    'id': 'point',
-    'source': 'point',
-    'type': 'symbol',
-    'layout': {
-      // This icon is a part of the Mapbox Streets style.
-      // To view all images available in a Mapbox style, open
-      // the style in Mapbox Studio and click the "Images" tab.
-      // To add a new image to the style at runtime see
-      // https://docs.mapbox.com/mapbox-gl-js/example/add-image/
-      'icon-image': 'airport-15',
-      'icon-size': 2,
-      'icon-rotate': ['get', 'bearing'],
-      'icon-rotation-alignment': 'map',
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true
-    }
-  });
-  
-  function animate() {
-    const start =
-      route.features[0].geometry.coordinates[
-      counter >= steps ? counter - 1 : counter
-      ];
-    const end =
-      route.features[0].geometry.coordinates[
-      counter >= steps ? counter : counter + 1
-      ];
-    if (!start || !end) return;
-
-    // Update point geometry to a new position based on counter denoting
-    // the index to access the arc
-    point.features[0].geometry.coordinates =
-      route.features[0].geometry.coordinates[counter];
-
-    // Calculate the bearing to ensure the icon is rotated to match the route arc
-    // The bearing is calculated between the current point and the next point, except
-    // at the end of the arc, which uses the previous point and the current point
-    point.features[0].properties.bearing = turf.bearing(
-      turf.point(start),
-      turf.point(end)
-    );
-
-    // Update the source with this new data
-    map.getSource('point').setData(point);
-
-    // Request the next frame of animation as long as the end has not been reached
-    if (counter < steps) {
-      requestAnimationFrame(animate);
-    }
-
-    counter = counter + 1;
-  }
-
-  document.getElementById('replay').addEventListener('click', () => {
-    // Set the coordinates of the original point back to origin
-    point.features[0].geometry.coordinates = origin;
-
-    // Update the source layer
-    map.getSource('point').setData(point);
-
-    // Reset the counter
-    counter = 0;
-
-    // Restart the animation
-    animate(counter);
-  });
-
-  // Start the animation
-  animate(counter);
 });
+
+// Target the params form in the HTML
+const params = document.getElementById('params');
+
+// Create constants to use in getIso()
+const urlBase = 'https://api.mapbox.com/isochrone/v1/mapbox/';
+let lon = 30.51694655983212;
+let lat = 50.464567272805226;
+let profile = 'walking'; // Set the default routing profile
+let minutes = 5; // Set the default duration
+
+const marker = new mapboxgl.Marker({
+  'color': '#314ccd'
+});
+
+const lngLat = {
+  lon: lon,
+  lat: lat
+};
+
+// Create a function that sets up the Isochrone API query then makes an fetch call
+async function getIso() {
+  const query = await fetch(
+    `${urlBase}${profile}/${lon},${lat}?contours_minutes=${minutes}&polygons=true&access_token=${mapboxgl.accessToken}`,
+    { method: 'GET' }
+  );
+  const data = await query.json();
+  // Set the 'iso' source's data to what's returned by the API query
+  map.getSource('iso').setData(data);
+}
+
+params.addEventListener('change', (event) => {
+  if (event.target.name === 'profile') {
+    profile = event.target.value;
+  } else if (event.target.name === 'duration') {
+    minutes = event.target.value;
+  }
+  getIso();
+});
+map.on('load', () => {
+  // When the map loads, add the source and layer
+  map.addSource('iso', {
+    type: 'geojson',
+    data: {
+      'type': 'FeatureCollection',
+      'features': []
+    }
+  });
+
+  map.addLayer(
+    {
+      'id': 'isoLayer',
+      'type': 'fill',
+      'source': 'iso',
+      'layout': {},
+      'paint': {
+        'fill-color': '#5a3fc0',
+        'fill-opacity': 0.3
+      }
+    },
+    'poi-label'
+  );
+
+  // Initialize the marker at the query coordinates
+  marker.setLngLat(lngLat).addTo(map);
+
+  // Make the API call
+  getIso();
+});
+
+
+
+
+
+
+
+/* DEBUGGER */
+// let lng;
+// let lat;
+
+// map.on('click', (event) => {
+//   // When the map is clicked, set the lng and lat constants
+//   // equal to the lng and lat properties in the returned lngLat object.
+//   lng = event.lngLat.lng;
+//   lat = event.lngLat.lat;
+//   console.log(`${lng}, ${lat}`);
+// });
 
 
 // parameters to ensure the model is georeferenced correctly on the map
@@ -337,15 +251,4 @@ const customLayer = {
 
 map.on('style.load', () => {
   map.addLayer(customLayer, 'waterway-label');
-});
-
-let lng;
-let lat;
-
-map.on('click', (event) => {
-  // When the map is clicked, set the lng and lat constants
-  // equal to the lng and lat properties in the returned lngLat object.
-  lng = event.lngLat.lng;
-  lat = event.lngLat.lat;
-  console.log(`${lng}, ${lat}`);
 });
