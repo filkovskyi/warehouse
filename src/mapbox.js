@@ -3,6 +3,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiaXZhbmRyYWdvIiwiYSI6ImNrcG9odnc2eTBscGgzMXA0d
 /* GENERAL */
 const map = new mapboxgl.Map({
   style: 'mapbox://styles/mapbox/streets-v11',
+  //style: 'mapbox://styles/ivandrago/cl53m16wg000114n7j24jebxm',
   center: [30.51694655983212, 50.464567272805226],
   zoom: 18,
   pitch: 50,
@@ -62,19 +63,28 @@ let lat = 50.464567272805226;
 let profile = 'walking'; // Set the default routing profile
 let minutes = 5; // Set the default duration
 
-const marker = new mapboxgl.Marker({
-  'color': '#314ccd'
-});
-
 const lngLat = {
   lon: lon,
   lat: lat
 };
 
+const changeColor = duration => { 
+  switch (+duration) {
+    case 5:
+      return '389e0d'
+    case 10:
+      return 'fa8c16'
+    case 20:
+      return 'f5222d'
+    default:
+      return '389e0d'
+  }
+}
+
 // Create a function that sets up the Isochrone API query then makes an fetch call
 async function getIso() {
   const query = await fetch(
-    `${urlBase}${profile}/${lon},${lat}?contours_minutes=${minutes}&polygons=true&access_token=${mapboxgl.accessToken}`,
+    `${urlBase}${profile}/${lon},${lat}?contours_minutes=${minutes}&contours_colors=${changeColor(minutes)}&polygons=true&access_token=${mapboxgl.accessToken}`,
     { method: 'GET' }
   );
   const data = await query.json();
@@ -89,7 +99,24 @@ params.addEventListener('change', (event) => {
     minutes = event.target.value;
   }
   getIso();
+
+  
+  map.removeLayer('isoLayer')
+  map.addLayer(
+    {
+      'id': 'isoLayer',
+      'type': 'fill',
+      'source': 'iso',
+      'layout': {},
+      'paint': {
+        'fill-color': `#${changeColor(minutes)}`,
+        'fill-opacity': 0.3
+      }
+    },
+    'poi-label'
+  );
 });
+
 map.on('load', () => {
   // When the map loads, add the source and layer
   map.addSource('iso', {
@@ -107,21 +134,16 @@ map.on('load', () => {
       'source': 'iso',
       'layout': {},
       'paint': {
-        'fill-color': '#5a3fc0',
+        'fill-color': `#${changeColor(minutes)}`,
         'fill-opacity': 0.3
       }
     },
     'poi-label'
   );
 
-  // Initialize the marker at the query coordinates
-  marker.setLngLat(lngLat).addTo(map);
-
   // Make the API call
   getIso();
 });
-
-
 
 
 
