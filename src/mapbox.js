@@ -1,59 +1,3 @@
-mapboxgl.accessToken = 'pk.eyJ1IjoiaXZhbmRyYWdvIiwiYSI6ImNrcG9odnc2eTBscGgzMXA0dTdseHh3Z2oifQ.BcuLTD0qDBvUY1tYyXzDEA';
-
-/* GENERAL */
-const map = new mapboxgl.Map({
-  style: 'mapbox://styles/mapbox/streets-v11',
-  //TODO:refactor with custom styles 3d model not shown
-  //style: 'mapbox://styles/ivandrago/cl53m16wg000114n7j24jebxm',
-  center: [30.51694655983212, 50.464567272805226],
-  zoom: 16,
-  pitch: 50,
-  bearing: -10,
-  container: 'map',
-  antialias: true,
-});
-
-map.on('load', () => {
-  const layers = map.getStyle().layers;
-  const labelLayerId = layers.find(
-    (layer) => layer.type === 'symbol' && layer.layout['text-field']
-  ).id;
-
-  map.addLayer(
-    {
-      'id': 'add-3d-buildings',
-      'source': 'composite',
-      'source-layer': 'building',
-      'filter': ['==', 'extrude', 'true'],
-      'type': 'fill-extrusion',
-      'minzoom': 15,
-      'paint': {
-        'fill-extrusion-color': '#aaa',
-        'fill-extrusion-height': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          15,
-          0,
-          15.05,
-          ['get', 'height']
-        ],
-        'fill-extrusion-base': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          15,
-          0,
-          15.05,
-          ['get', 'min_height']
-        ],
-        'fill-extrusion-opacity': 0.6
-      }
-    },
-    labelLayerId
-  );
-});
-
 // Target the params form in the HTML
 const params = document.getElementById('params');
 
@@ -69,7 +13,7 @@ const lngLat = {
   lat: lat
 };
 
-const changeColor = duration => { 
+const changeColor = duration => {
   switch (+duration) {
     case 5:
       return '389e0d'
@@ -101,7 +45,7 @@ params.addEventListener('change', (event) => {
   }
   getIso();
 
-  
+
   map.removeLayer('isoLayer')
   map.addLayer(
     {
@@ -144,46 +88,4 @@ map.on('load', () => {
 
   // Make the API call
   getIso();
-
-  map.addLayer({
-    id: 'custom_layer',
-    type: 'custom',
-    renderingMode: '3d',
-    onAdd: function (map, mbxContext) {
-
-      window.tb = new Threebox(
-        map,
-        mbxContext,
-        { defaultLights: true }
-      );
-
-      var options = {
-        obj: '/models/gltf/condo.glb',
-        type: 'gltf',
-        scale: 1,
-        units: 'meters',
-        rotation: { x: 90, y: 0, z: 0 } //default rotation
-      }
-
-      tb.loadObj(options, function (model) {
-        soldier = model.setCoords([30.51694655983212, 50.464567272805226]);
-        tb.add(soldier);
-      })
-
-    },
-    render: function (gl, matrix) {
-      tb.update();
-    }
-  });
-});
-
-
-
-/* DEBUGGER */
-map.on('click', (event) => {
-  // When the map is clicked, set the lng and lat constants
-  // equal to the lng and lat properties in the returned lngLat object.
-  lng = event.lngLat.lng;
-  lat = event.lngLat.lat;
-  console.log(`${lng}, ${lat}`);
 });
