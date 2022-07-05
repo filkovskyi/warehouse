@@ -21,11 +21,8 @@ map.on('load', () => {
   map.addLayer(building);
 });
 
-
 /* Load commute area layer */
 map.on('load', () => {
-  
-
   map.addSource('iso', commuteArea.getSource());
   map.addLayer(commuteArea.getLayer(), 'poi-label');
 
@@ -45,8 +42,8 @@ params.addEventListener('change', (event) => {
   }
  
   map.removeLayer('isoLayer')
-  commuteArea.getIso(map)
   map.addLayer(commuteArea.getLayer(profile, minutes), 'poi-label');
+  commuteArea.getIso(map)
 });
 
 

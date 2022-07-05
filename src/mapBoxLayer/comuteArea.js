@@ -2,12 +2,13 @@ import config from '../utils/config'
 
 export default class CommuteArea {
   constructor(profile, minutes) {
-    this.query = null
     this.urlBase = 'https://api.mapbox.com/isochrone/v1/mapbox/';
     this.lon = config.defaultMapOptions.center[0];
     this.lat = config.defaultMapOptions.center[1];
     this.profile = profile || 'walking';
     this.minutes = minutes || 5;
+    this.query = `${this.urlBase}${this.profile}/${this.lon},${this.lat}?contours_minutes=${this.minutes}&polygons=true&access_token=${config.accessToken}`
+
     this.fillColor = this.changeColor(this.minutes)
 
     const commuteAreaLayer = {
@@ -35,7 +36,7 @@ export default class CommuteArea {
     this.getQuery()
   }
 
-  getCommuteAreaLayer(color) { 
+  getCommuteAreaLayer(color) {
     this.commuteAreaLayer = {
       ...this.commuteAreaLayer,
       paint: {
@@ -47,7 +48,9 @@ export default class CommuteArea {
 
   getLayer(profile, minutes) {
     if (profile && minutes) {
-      this.changeColor(minutes)
+      this.changeMinutes(minutes)
+      this.changeProfile(profile)
+   
       this.getCommuteAreaLayer(this.fillColor)
       return this.commuteAreaLayer
     } else {
@@ -74,6 +77,17 @@ export default class CommuteArea {
       default:
         return this.fillColor = '#389e0d'
     }
+  }
+
+  changeProfile(profile) { 
+    this.profile = profile
+    return this.getQuery()
+  }
+  
+  changeMinutes(minutes) { 
+    this.minutes = minutes
+    this.changeColor(minutes)
+    return this.getQuery()
   }
 
   async getIso(map) {
