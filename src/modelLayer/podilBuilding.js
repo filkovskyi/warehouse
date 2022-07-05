@@ -1,5 +1,5 @@
 import { Threebox } from 'threebox-plugin';
-import config from '../config';
+import config from '../utils/config';
 
 const buildingCoords = config.podilBuildingCords
 

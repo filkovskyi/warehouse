@@ -1,6 +1,6 @@
 const minZoom = 12;
 
-const mapWebGLbuilding = {
+const building = {
   'id': 'add-3d-buildings',
   'source': 'composite',
   'source-layer': 'building',
@@ -39,4 +39,4 @@ const mapWebGLbuilding = {
   }
 }
 
-export default mapWebGLbuilding;
+export default building;
